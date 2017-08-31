@@ -10,12 +10,13 @@ class TextLoadingBackground(
     private val view: TextView
 ) : ColorDrawable() {
 
-    private val paintArea = view.paintArea
+    private val paintArea = view.textBounds()
     private val paint = Paint()
 
     override fun draw(canvas: Canvas) {
         paintArea.right = canvas.width - view.paddingRight
-        canvas.drawRect(paintArea, paint)
+        canvas.clipRect(paintArea)
+        super.draw(canvas)
     }
 
     override fun setColor(color: Int) {
@@ -23,15 +24,13 @@ class TextLoadingBackground(
         paint.color = color
     }
 
-    private val TextView.fontHeight: Int
-        get() = with(paint.fontMetrics) { bottom - top }.toInt()
+    private fun TextView.textBounds() =
+        Rect(paddingLeft, paddingTop, 0, textBottom)
 
-    private val TextView.paintArea: Rect
-        get() = Rect(
-            paddingLeft,
-            paddingTop,
-            0,
-            paddingTop + fontHeight - paddingBottom
-        )
+    private val TextView.textBottom
+        get() = paddingTop + paint.fontMetrics.height - paddingBottom
+
+    private val Paint.FontMetrics.height: Int
+        get() = (bottom - top).toInt()
 
 }
